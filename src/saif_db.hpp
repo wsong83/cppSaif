@@ -52,16 +52,33 @@ namespace saif {
   // a signal (single or multi bits)
   class SaifSignal {
   public:
-    std::map<int, SaifSignal> bits;
+    std::map<int, SaifSignal *> bits;
     SaifRecord data;
   };
 
   // instance
   class SaifInstance {
   public:
-    std::map<std::string, SaifSignal> ports;
-    std::map<std::string, SaifInstance> instances;
+    std::map<std::string, SaifSignal *> ports;
+    std::map<std::string, SaifInstance *> instances;
     std::string module_name;
+  };
+
+  // database
+  class SaifDB {
+  public:
+    std::string version;
+    std::string direction;
+    std::string date;
+    std::string vendor;
+    std::string progam_name;
+    std::string tool_version;
+    std::string divider;
+    mpz_class duration;
+    std::pair<mpz_class, std::string> timescale;
+
+    SaifInstance *top;
+    std::string top_name;
   };
 
 }

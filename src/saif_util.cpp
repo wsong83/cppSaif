@@ -92,6 +92,8 @@ bool saif::SaifLexer::token_helper(int vrvt,
 bool saif::SaifLexer::validate_token(const string& t, vcd_token_type * tt, int& rvt) {
   switch(state.back().first) {
   case S_BEGIN: {
+    if(t == "INSTANCE")   
+      return token_helper(TType::SKeyINSTANCE,      true, S_INST,      0, false, rvt, true);
     if(t == "(")           
       return token_helper('(',                      true, S_BEGIN,     0, false, rvt, true);
     if(t == "SAIFILE")    
@@ -116,8 +118,6 @@ bool saif::SaifLexer::validate_token(const string& t, vcd_token_type * tt, int& 
       return token_helper(TType::SKeyTIMESCALE,     true, S_TIMESCALE, 0, false, rvt, true);
     if(t == "DURATION")   
       return token_helper(TType::SKeyDURATION,      true, S_DUR,       0, false, rvt, true);
-    if(t == "INSTANCE")   
-      return token_helper(TType::SKeyINSTANCE,      true, S_INST,      0, false, rvt, true);
     if(t == ")")          
       return token_helper(')',                      false, 0,          0, true,  rvt, true);
     assert(0 == "should not reach here");
@@ -266,14 +266,3 @@ bool saif::SaifLexer::validate_token(const string& t, vcd_token_type * tt, int& 
   return false;
 }
         
-
-    
-    
-    
-
-
-
-    
-
-
-    
