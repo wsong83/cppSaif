@@ -32,15 +32,26 @@
 #include <string>
 #include <iostream>
 #include <gmpxx.h>
+#include "saif_db.hpp"
 
 #define YYSTYPE saif::saif_token_type
 
 namespace saif {
 
   struct saif_token_type {
-    std::string               tStr;              // string
-    std::string               tVar;              // variable
-    mpz_class                 tNum;              // number
+    std::string                          tStr;              // string
+    std::string                          tVar;              // variable
+    mpz_class                            tNum;              // number
+    std::pair<unsigned int, mpz_class>   tAct;              // activity
+    boost::shared_ptr<saif::SaifRecord>  tRecord;           // a saif record
+    std::pair<std::string, boost::shared_ptr<saif::SaifRecord> >
+                                         tSig;              // signal
+    std::map<std::string, boost::shared_ptr<saif::SaifRecord> >
+                                         tSigList;          // signal list
+    std::pair<std::string, boost::shared_ptr<saif::SaifInstance> >
+                                         tInst;             // saif instance
+    std::map<std::string, boost::shared_ptr<saif::SaifInstance> >
+                                         tInstList;        // saif instance list
   };
 
   class SaifLexer {

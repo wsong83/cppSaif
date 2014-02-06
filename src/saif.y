@@ -109,3 +109,33 @@ saif_line
 saif_insatnces
     : saif_insatnce
     | saif_insatnces saif_insatnce
+
+saif_insatnce
+    : '(' "INSTANCE" SString SVar instance_contents ')'
+    | '(' "INSTANCE" SVar instance_contents ')'
+
+instance_contents
+    : port_list
+    | port_list instances
+
+port_list
+    : '(' "PORT" signal_lists ')'
+
+signal_lists
+    : signal
+    | signal_lists signal
+
+signal
+    : '(' SVar activities ')'
+
+activities
+    : activity
+    | activities activity
+
+activity
+    : '(' "T0" SNum ')'
+    | '(' "T1" SNum ')'
+    | '(' "TX" SNum ')'
+    | '(' "TZ" SNum ')'
+    | '(' "TC" SNum ')'
+    | '(' "IG" SNum ')'
