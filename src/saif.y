@@ -75,9 +75,17 @@
 %token SKeyTC                       "TC"
 %token SKeyIG                       "IG"
 
-%token<tStr> SString
-%token<tVar> SVar
-%token<tNum> SNum
+%token<tStr>       SString
+%token<tVar>       SVar
+%token<tNum>       SNum
+
+%type <tAct>       activity
+%type <tRecord>    activities
+%type <tSig>       signal
+%type <tSigList>   signal_lists
+%type <tInst>      instance_contents
+%type <tInstPair>  saif_insatnce
+%type <tInstList>  saif_insatnces
 
 // the saif file
 
@@ -103,39 +111,96 @@ saif_line
     { 
       db->timescale    = std::pair<mpz_class, std::string>($3, $4); 
     }
-    | '(' "DURATION"     SNum    ')'   { db->duration = $3; }
-    | saif_instance                    
+    | '(' "DURATION"     SNum    ')'   { db->duration = $3;     }
+    | saif_instance                    { db->top = $1;          }
+    ;
 
 saif_insatnces
-    : saif_insatnce
-    | saif_insatnces saif_insatnce
+    : saif_insatnce                      { $$[$1.first] = $1.second; }
+    | saif_insatnces saif_insatnce       { $$[$2.first] = $2.second; }
+    ;
 
 saif_insatnce
     : '(' "INSTANCE" SString SVar instance_contents ')'
+    {
+      $$.first = $4;
+      $$.second = $5;
+      $$.second->module_name = $3;
+    }
     | '(' "INSTANCE" SVar instance_contents ')'
+    {
+      $$.first = $3;
+      $$.second = $4;
+    }
+    ;
 
 instance_contents
     : port_list
+    { 
+      $$.reset(new saif::SaifInstance());
+      $$->ports = $1;
+    }
     | port_list instances
+    {
+      $$.reset(new saif::SaifInstance());
+      $$->ports = $1;
+      $$->instances = $2;
+    }
+    ;
+      
 
 port_list
-    : '(' "PORT" signal_lists ')'
+    : '(' "PORT" signal_lists ')' { $$ = $3; }
+    ;
 
 signal_lists
-    : signal
-    | signal_lists signal
+    : signal               { $$[$1.first] = $1.second; }
+    | signal_lists signal  { $$[$2.first] = $2.second; }
+    ;
 
 signal
     : '(' SVar activities ')'
+    {
+      $$.first = $2;
+      $$.second = $3;
+    }
+    ;
 
 activities
     : activity
+    { 
+      $$.reset(new saif::SaifRecord());
+      switch($1.first) {
+      case 0:  $$->T0 = $1.second; break;
+      case 1:  $$->T1 = $1.second; break;
+      case 2:  $$->TX = $1.second; break;
+      case 3:  $$->TZ = $1.second; break;
+      case 4:  $$->TC = $1.second; break;
+      case 5:  $$->IG = $1.second; break;
+      default:
+        assert(0 == "should not run to this");
+      }
+    }
     | activities activity
+    {
+      switch($2.first) {
+      case 0:  $$->T0 = $2.second; break;
+      case 1:  $$->T1 = $2.second; break;
+      case 2:  $$->TX = $2.second; break;
+      case 3:  $$->TZ = $2.second; break;
+      case 4:  $$->TC = $2.second; break;
+      case 5:  $$->IG = $2.second; break;
+      default:
+        assert(0 == "should not run to this");
+      }
+    }
+    ;
 
 activity
-    : '(' "T0" SNum ')'
-    | '(' "T1" SNum ')'
-    | '(' "TX" SNum ')'
-    | '(' "TZ" SNum ')'
-    | '(' "TC" SNum ')'
-    | '(' "IG" SNum ')'
+    : '(' "T0" SNum ')'     { $$.first = 0; $$.second = $3; }
+    | '(' "T1" SNum ')'     { $$.first = 1; $$.second = $3; }
+    | '(' "TX" SNum ')'     { $$.first = 2; $$.second = $3; }
+    | '(' "TZ" SNum ')'     { $$.first = 3; $$.second = $3; }
+    | '(' "TC" SNum ')'     { $$.first = 4; $$.second = $3; }
+    | '(' "IG" SNum ')'     { $$.first = 5; $$.second = $3; }
+    ;

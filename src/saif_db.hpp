@@ -33,6 +33,7 @@
 #include <map>
 #include <vector>
 #include <gmpxx.h>
+#include <boost/shared_ptr.hpp>
 
 
 namespace saif {
@@ -59,8 +60,8 @@ namespace saif {
   // instance
   class SaifInstance {
   public:
-    std::map<std::string, SaifSignal *> ports;
-    std::map<std::string, SaifInstance *> instances;
+    std::map<std::string, boost::shared_ptr<SaifSignal> > ports;
+    std::map<std::string, boost::shared_ptr<SaifInstance> > instances;
     std::string module_name;
   };
 
@@ -77,7 +78,7 @@ namespace saif {
     mpz_class duration;
     std::pair<mpz_class, std::string> timescale;
 
-    SaifInstance *top;
+    boost::shared_ptr<SaifInstance> top;
     std::string top_name;
   };
 

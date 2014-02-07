@@ -48,10 +48,12 @@ namespace saif {
                                          tSig;              // signal
     std::map<std::string, boost::shared_ptr<saif::SaifRecord> >
                                          tSigList;          // signal list
+    boost::shared_ptr<saif::SaifInstance> 
+                                         tInst;             // saif instance pair
     std::pair<std::string, boost::shared_ptr<saif::SaifInstance> >
-                                         tInst;             // saif instance
+                                         tInstPair;         // saif instance pair
     std::map<std::string, boost::shared_ptr<saif::SaifInstance> >
-                                         tInstList;        // saif instance list
+                                         tInstList;         // saif instance list
   };
 
   class SaifLexer {
