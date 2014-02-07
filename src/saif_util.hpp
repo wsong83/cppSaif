@@ -89,6 +89,8 @@ namespace saif {
                       unsigned int, bool, int&, bool);
   };
 
+  std::string signal_name_normalizer(const std::string&);
+  std::string signal_name_parser(const std::string&, std::list<int>&);
 }
 
 

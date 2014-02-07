@@ -75,6 +75,7 @@
 %token SKeyTX                       "TX"
 %token SKeyTC                       "TC"
 %token SKeyIG                       "IG"
+%token SKeyTB                       "TB"
 
 %token<tStr>       SString
 %token<tVar>       SVar
@@ -171,8 +172,46 @@ port_list
     ;
 
 signal_lists
-    : signal               { $$[$1.first] = $1.second; }
-    | signal_lists signal  { $$[$2.first] = $2.second; }
+    : signal               
+    { 
+      // parse the signal name
+      std::list<int> dim;
+      std::string sig_name = signal_name_parser(signal_name_normalizer($1.first), dim);
+      
+      if(!$$.count(sig_name))
+        $$[sig_name].reset(new saif::SaifSignal()); 
+
+      boost::shared_ptr<saif::SaifSignal> sig = $$[sig_name];
+      while(!dim.empty()) {
+        if(!sig->bits.count(dim.front()))
+          sig->bits[dim.front()].reset(new saif::SaifSignal());
+        sig = sig->bits[dim.front()];
+        dim.pop_front();
+      }
+      
+      // insert data
+      sig->data = $1.second->data;
+    }
+    | signal_lists signal  
+    { 
+      // parse the signal name
+      std::list<int> dim;
+      std::string sig_name = signal_name_parser(signal_name_normalizer($2.first), dim);
+      
+      if(!$$.count(sig_name))
+        $$[sig_name].reset(new saif::SaifSignal()); 
+
+      boost::shared_ptr<saif::SaifSignal> sig = $$[sig_name];
+      while(!dim.empty()) {
+        if(!sig->bits.count(dim.front()))
+          sig->bits[dim.front()].reset(new saif::SaifSignal());
+        sig = sig->bits[dim.front()];
+        dim.pop_front();
+      }
+      
+      // insert data
+      sig->data = $2.second->data;
+    }
     ;
 
 signal
@@ -208,6 +247,7 @@ activities
       case 3:  $$->TZ = $2.second; break;
       case 4:  $$->TC = $2.second; break;
       case 5:  $$->IG = $2.second; break;
+      case 6:  $$->TB = $2.second; break;
       default:
         assert(0 == "should not run to this");
       }
@@ -221,6 +261,7 @@ activity
     | '(' "TZ" SNum ')'     { $$.first = 3; $$.second = $3; }
     | '(' "TC" SNum ')'     { $$.first = 4; $$.second = $3; }
     | '(' "IG" SNum ')'     { $$.first = 5; $$.second = $3; }
+    | '(' "TB" SNum ')'     { $$.first = 6; $$.second = $3; }
     ;
 
 %%

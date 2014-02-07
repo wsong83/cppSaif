@@ -28,8 +28,10 @@
 
 #include "saif_util.hpp"
 #include "saif.hh"
+#include <gmpxx.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace saif;
 using std::string;
@@ -68,10 +70,10 @@ int saif::SaifLexer::lexer(saif_token_type * rv) {
 
 string saif::SaifLexer::next_token() {
   // get rid of starting blanks
-  buf.erase(0, buf.find_first_not_of(' '));
+  buf.erase(0, buf.find_first_not_of(" \t"));
   if(buf.empty()) return buf;
 
-  unsigned int loc = buf.find_first_of("\"() ");
+  unsigned int loc = buf.find_first_of("\"() \t");
   if(loc == 0) loc = 1;
   string t = buf.substr(0, loc);
   buf.erase(0, loc);
@@ -92,7 +94,10 @@ bool saif::SaifLexer::token_helper(int vrvt,
   if(pop_state) {
     state.pop_back();
     switch(state.back().first) {
-    case S_INST: state.back().second = 1; break;
+    case S_INST: 
+      if(state.back().second == 2)
+        state.back().second = 1; 
+      break;
     default: ;// nothing to do
     }
   }
@@ -249,6 +254,8 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
         return token_helper(TType::SKeyTC,          false, 0,          3, false,  rvt, true);
       if(t == "IG")
         return token_helper(TType::SKeyIG,          false, 0,          3, false,  rvt, true);
+      if(t == "TB")
+        return token_helper(TType::SKeyTB,          false, 0,          3, false,  rvt, true);
       assert(0 == "should not reach here");
       break;
     }
@@ -283,5 +290,28 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
     assert(0 == "should not reach here");
   }
   return false;
+}
+
+string saif::signal_name_normalizer(const string& orig) {
+  string str = orig;
+  std::size_t found = str.find("\\[");
+  while(found != std::string::npos) {
+    str.erase(found, 1);
+    found = str.find("\\[");
+  }
+  found = str.find("\\]");
+  while(found != std::string::npos) {
+    str.erase(found, 1);
+    found = str.find("\\]");
+  }
+  return str;
+}
+
+string saif::signal_name_parser(const string& orig, std::list<int>& dim) {
+  std::vector<string> fields;
+  boost::split(fields, orig, boost::is_any_of("[]"), boost::token_compress_on);
+  for(unsigned int i=1; i<fields.size()-1; i++)
+    dim.push_back(mpz_class(fields[i]).get_si());
+  return fields[0];
 }
         

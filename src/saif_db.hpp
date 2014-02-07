@@ -48,6 +48,7 @@ namespace saif {
     mpz_class TZ;
     mpz_class TC;
     mpz_class IG;
+    mpz_class TB;
   };
 
   // a signal (single or multi bits)
