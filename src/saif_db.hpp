@@ -60,7 +60,7 @@ namespace saif {
   // instance
   class SaifInstance {
   public:
-    std::map<std::string, boost::shared_ptr<SaifSignal> > ports;
+    std::map<std::string, boost::shared_ptr<SaifSignal> > signals;
     std::map<std::string, boost::shared_ptr<SaifInstance> > instances;
     std::string module_name;
   };

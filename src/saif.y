@@ -68,6 +68,7 @@
 %token SKeyDURATION                 "DURATION"
 %token SKeyINSTANCE                 "INSTANCE"
 %token SKeyPORT                     "PORT"
+%token SKeyNET                      "NET"
 %token SKeyT0                       "T0"
 %token SKeyT1                       "T1"
 %token SKeyTZ                       "TZ"
@@ -148,19 +149,25 @@ instance_contents
     : port_list
     { 
       $$.reset(new saif::SaifInstance());
-      $$->ports = $1;
+      $$->signals = $1;
     }
     | port_list saif_instances
     {
       $$.reset(new saif::SaifInstance());
-      $$->ports = $1;
+      $$->signals = $1;
       $$->instances = $2;
+    }
+    | saif_instances
+    {
+      $$.reset(new saif::SaifInstance());
+      $$->instances = $1;
     }
     ;
       
 
 port_list
     : '(' "PORT" signal_lists ')' { $$ = $3; }
+    | '(' "NET" signal_lists ')'  { $$ = $3; }
     ;
 
 signal_lists
@@ -215,3 +222,9 @@ activity
     | '(' "TC" SNum ')'     { $$.first = 4; $$.second = $3; }
     | '(' "IG" SNum ')'     { $$.first = 5; $$.second = $3; }
     ;
+
+%%
+
+void saif::saif_parser::error (const saif::location& loc, const std::string& msg) {
+  std::cout << loc << ":" << msg << std::endl;
+  }

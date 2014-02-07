@@ -29,6 +29,7 @@
 #include "saif_util.hpp"
 #include "saif.hh"
 #include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
 
 using namespace saif;
 using std::string;
@@ -44,17 +45,22 @@ int saif::SaifLexer::lexer(saif_token_type * rv) {
     if(buf.empty()) {
       if(istm->eof()) return 0;
       else std::getline(*istm, buf);
+      //std::cout << "buf: " << buf << std::endl;
     }
 
-    std::cout << "buf: " << buf;
-
     string token = next_token();
+    //std::cout << "      token: " << token << std::endl;
     if(token.empty()) continue;
     else {
       int rvt;                  // return token type
       if(!validate_token(token, rv, rvt)) 
         continue;
-      std::cout << " |token: " << rvt << std::endl;
+      //std::cout << "  \"" << token << "\": (" << rvt << ")";
+      //std::cout << "    ";
+      //typedef std::pair<unsigned int, unsigned int> state_type;
+      //BOOST_FOREACH(const state_type& it, state)
+      //  std::cout << "[" << it.first << "." << it.second << "]";
+      //std::cout << std::endl;
       return rvt;
     }
   }
@@ -83,8 +89,13 @@ bool saif::SaifLexer::token_helper(int vrvt,
   
   state.back().second = sub_state;
   
-  if(pop_state)
+  if(pop_state) {
     state.pop_back();
+    switch(state.back().first) {
+    case S_INST: state.back().second = 1; break;
+    default: ;// nothing to do
+    }
+  }
 
   rvt = vrvt;
 
@@ -105,7 +116,7 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
     if(t == "DIRECTION")  
       return token_helper(TType::SKeyDIRECTION,     true, S_DEF,       0, false, rvt, true);
     if(t == "DESIGN")     
-      return token_helper(TType::SKeyDESIGN,        true, S_DEF,       0, false, rvt, true);
+      return token_helper(TType::SKeyDESIGN,        false, 0,          0, false, rvt, true);
     if(t == "DATE")       
       return token_helper(TType::SKeyDATE,          true, S_DEF,       0, false, rvt, true);
     if(t == "VENDOR")     
@@ -181,9 +192,9 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
     case 1: {
       if(t== "(") 
         return token_helper('(',                    false, 0,          2, false,  rvt, true);
-      else {
-        assert(0 == "should not reach here");
-      }
+      if(t== ")") 
+        return token_helper(')',                    false, 0,          0, true,   rvt, true);
+      assert(0 == "should not reach here");
       break;
     }
     case 2: {
@@ -191,6 +202,8 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
         return token_helper(TType::SKeyINSTANCE,    true, S_INST,      0, false,  rvt, true);
       if(t == "PORT")
         return token_helper(TType::SKeyPORT,        true,  S_PORT,     0, false,  rvt, true);
+      if(t == "NET")
+        return token_helper(TType::SKeyNET,         true,  S_PORT,     0, false,  rvt, true);
       if(t == ")")
         return token_helper(')',                    false, 0,          0, true,   rvt, true);
       assert(0 == "should not reach here");
@@ -255,10 +268,14 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
     break;
   }
   case S_STR: {
-    if(t == "\"")
+    if(t == "\"") {
+      buf.insert(0, t);
       return token_helper(0,                         false, 0,          0, true,  rvt, false);
-    else {
-      m_string += " " + t;
+    } else {
+      if(m_string.empty())
+        m_string = t;
+      else
+        m_string += " " + t;
       return false;
     }
   }
