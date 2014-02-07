@@ -5,8 +5,8 @@
 %define parser_class_name "saif_parser"
 %language "c++"
 %output "saif.cc"
-%parse-param {vcd::SaifLexer* lexer}
-%parse-param {vcd::SaifDB* db}
+%parse-param {saif::SaifLexer* lexer}
+%parse-param {saif::SaifDB* db}
 %{
 
 /*
@@ -83,20 +83,26 @@
 %type <tRecord>    activities
 %type <tSig>       signal
 %type <tSigList>   signal_lists
+%type <tSigList>   port_list
 %type <tInst>      instance_contents
-%type <tInstPair>  saif_insatnce
-%type <tInstList>  saif_insatnces
+%type <tInstPair>  saif_instance
+%type <tInstList>  saif_instances
 
 // the saif file
 
 %start saif_file
 
+
+%%
+
 saif_file
     : '(' "SAIFILE" saif_contents ')'
+    ;
 
 saif_contents
     : saif_line
     | saif_contents saif_line
+    ;
 
 saif_line
     : '(' "SAIFVERSION"  SString ')'   { db->version      = $3; }
@@ -112,15 +118,19 @@ saif_line
       db->timescale    = std::pair<mpz_class, std::string>($3, $4); 
     }
     | '(' "DURATION"     SNum    ')'   { db->duration = $3;     }
-    | saif_instance                    { db->top = $1;          }
+    | saif_instance
+    { 
+      db->top = $1.second;
+      db->top_name = $1.first;
+    }
     ;
 
-saif_insatnces
-    : saif_insatnce                      { $$[$1.first] = $1.second; }
-    | saif_insatnces saif_insatnce       { $$[$2.first] = $2.second; }
+saif_instances
+    : saif_instance                      { $$[$1.first] = $1.second; }
+    | saif_instances saif_instance       { $$[$2.first] = $2.second; }
     ;
 
-saif_insatnce
+saif_instance
     : '(' "INSTANCE" SString SVar instance_contents ')'
     {
       $$.first = $4;
@@ -140,7 +150,7 @@ instance_contents
       $$.reset(new saif::SaifInstance());
       $$->ports = $1;
     }
-    | port_list instances
+    | port_list saif_instances
     {
       $$.reset(new saif::SaifInstance());
       $$->ports = $1;
@@ -162,7 +172,8 @@ signal
     : '(' SVar activities ')'
     {
       $$.first = $2;
-      $$.second = $3;
+      $$.second.reset(new saif::SaifSignal());
+      $$.second->data = $3;
     }
     ;
 

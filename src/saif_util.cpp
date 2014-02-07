@@ -30,15 +30,16 @@
 #include "saif.hh"
 #include <boost/lexical_cast.hpp>
 
-using namespace vcd;
+using namespace saif;
 using std::string;
+using std::pair;
 
 #define TType saif_parser::token 
 
 saif::SaifLexer::SaifLexer(std::istream * i) 
-  : istm(i), sub_state(0), m_string("") { state.push_back(S_BEGIN); }
+  : istm(i), m_string("") { state.push_back(pair<unsigned int, unsigned int>(S_BEGIN, 0)); }
 
-int saif::SaifLexer::lexer(vcd_token_type * rv) {
+int saif::SaifLexer::lexer(saif_token_type * rv) {
   while(true) {
     if(buf.empty()) {
       if(istm->eof()) return 0;
@@ -50,6 +51,7 @@ int saif::SaifLexer::lexer(vcd_token_type * rv) {
     string token = next_token();
     if(token.empty()) continue;
     else {
+      int rvt;                  // return token type
       if(!validate_token(token, rv, rvt)) 
         continue;
       std::cout << " |token: " << rvt << std::endl;
@@ -89,7 +91,7 @@ bool saif::SaifLexer::token_helper(int vrvt,
   return breturn;
 }
 
-bool saif::SaifLexer::validate_token(const string& t, vcd_token_type * tt, int& rvt) {
+bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int& rvt) {
   switch(state.back().first) {
   case S_BEGIN: {
     if(t == "INSTANCE")   
@@ -109,7 +111,7 @@ bool saif::SaifLexer::validate_token(const string& t, vcd_token_type * tt, int& 
     if(t == "VENDOR")     
       return token_helper(TType::SKeyVENDOR,        true, S_DEF,       0, false, rvt, true);
     if(t == "PROGRAM_NAME")
-      return token_helper(TType::SKeyPROGRAME_NAME, true, S_DEF,       0, false, rvt, true);
+      return token_helper(TType::SKeyPROGRAM_NAME,  true, S_DEF,       0, false, rvt, true);
     if(t == "VERSION")    
       return token_helper(TType::SKeyVERSION,       true, S_DEF,       0, false, rvt, true);
     if(t == "DIVIDER")    

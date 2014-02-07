@@ -53,8 +53,8 @@ namespace saif {
   // a signal (single or multi bits)
   class SaifSignal {
   public:
-    std::map<int, SaifSignal *> bits;
-    SaifRecord data;
+    std::map<int, boost::shared_ptr<SaifSignal> > bits;
+    boost::shared_ptr<SaifRecord> data;
   };
 
   // instance
@@ -72,7 +72,7 @@ namespace saif {
     std::string direction;
     std::string date;
     std::string vendor;
-    std::string progam_name;
+    std::string program_name;
     std::string tool_version;
     std::string divider;
     mpz_class duration;

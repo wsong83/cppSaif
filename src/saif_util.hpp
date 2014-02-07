@@ -32,6 +32,7 @@
 #include <string>
 #include <iostream>
 #include <gmpxx.h>
+#include <list>
 #include "saif_db.hpp"
 
 #define YYSTYPE saif::saif_token_type
@@ -44,9 +45,9 @@ namespace saif {
     mpz_class                            tNum;              // number
     std::pair<unsigned int, mpz_class>   tAct;              // activity
     boost::shared_ptr<saif::SaifRecord>  tRecord;           // a saif record
-    std::pair<std::string, boost::shared_ptr<saif::SaifRecord> >
+    std::pair<std::string, boost::shared_ptr<saif::SaifSignal> >
                                          tSig;              // signal
-    std::map<std::string, boost::shared_ptr<saif::SaifRecord> >
+    std::map<std::string, boost::shared_ptr<saif::SaifSignal> >
                                          tSigList;          // signal list
     boost::shared_ptr<saif::SaifInstance> 
                                          tInst;             // saif instance pair
@@ -59,7 +60,7 @@ namespace saif {
   class SaifLexer {
   public:
     SaifLexer(std::istream *);
-    int lexer(vcd_token_type *);
+    int lexer(saif_token_type *);
     
 
   private:
@@ -77,17 +78,16 @@ namespace saif {
 
     std::istream * istm;        // input stream
     std::string buf;
-    std::list<unsigned int> state;
-    unsigned int sub_state;
+    std::list<std::pair<unsigned int, unsigned int> > state;
     std::string m_string;
 
     std::string next_token();   // get the next token
     bool validate_token(const std::string&, saif_token_type *, int&); // analyse the token
 
     // helper
-    token_helper(int, bool, unsigned int,
-                 unsigned int, bool, int&, bool);
-  }
+    bool token_helper(int, bool, unsigned int,
+                      unsigned int, bool, int&, bool);
+  };
 
 }
 

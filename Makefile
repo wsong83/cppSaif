@@ -21,34 +21,41 @@
 #
 #
 
-INCDIRS = -I.
-TARGETS = saif_db.o saif_parser.o
-LINK_FLAGS = -lgmp -lgmpxx
+# global variables
+#TARGET = RELEASE
+TARGET = DEBUG
 
+export BISON_EXE = bison
+export CXX = ccache g++
+export MC_FLAG =
 
-all: saif.o saif_util.o $(TARGETS) test
+ifeq ($(TARGET),RELEASE)
+	export CXXFLAGS = -std=c++0x -Wall -Wextra -o2 -DNDEBUG
+else
+	export CXXFLAGS = -std=c++0x -Wall -Wextra -g3
+endif
 
-saif.o: saif.cc saif.y saif_util.hpp saif_db.hpp
-	$(CXX) $(INCDIRS) $(CXXFLAGS) -c $< -o $@
+export LINKFLAGS = -lgmpxx -lgmp
 
-saif_util.o: saif_util.cpp saif_util.hpp saif_db.hpp
-	$(CXX) $(INCDIRS) $(CXXFLAGS) -c $< -o $@
+SUBDIRS = src
+BISONDIRS = src.bison
 
-$(TARGETS): %.o:%.cpp %.hpp
-	$(CXX) $(INCDIRS) $(CXXFLAGS) -c $< -o $@
+all: bison subdirs
+	-mkdir bin
+	-mv src/test bin/
 
-test: test.cpp
-	$(CXX) $< saif.o saif_util.o $(TARGETS) $(LINK_FLAGS) -o $@
+bison: $(BISONDIRS)
 
-bison: saif.cc
+subdirs: $(SUBDIRS)
 
-saif.cc: saif.y
-	$(BISON_EXE) $<
+$(SUBDIRS):
+	$(MAKE) $(MC_FLAG) -C $@
 
-.PHONY: clean
+src.bison:
+	$(MAKE) bison -C src
 
 clean:
-	-rm *.o *.output
-	-rm saif.cc saif.hh stack.hh location.hh position.hh
+	-for d in $(SUBDIRS); do $(MAKE) -C $$d clean; done
+	-rm -fr bin
 
-
+.PHONY: bison subdirs $(SUBDIRS) clean
