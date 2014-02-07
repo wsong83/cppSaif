@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+
+src/location.hh
+src/position.hh
+src/stack.hh
+src/saif.hh
+src/saif.cc
+src/saif.output
