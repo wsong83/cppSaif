@@ -30,6 +30,7 @@
 #define SAIF_DB_H_
 
 #include <string>
+#include <iostream>
 #include <map>
 #include <vector>
 #include <gmpxx.h>
@@ -49,14 +50,27 @@ namespace saif {
     mpz_class TC;
     mpz_class IG;
     mpz_class TB;
+
+    virtual std::ostream& streamout ( std::ostream& ) const;
   };
+  
+  inline std::ostream& operator<< ( std::ostream& os, const SaifRecord& rhs) {
+    return rhs.streamout(os);
+  }
 
   // a signal (single or multi bits)
   class SaifSignal {
   public:
     std::map<int, boost::shared_ptr<SaifSignal> > bits;
     boost::shared_ptr<SaifRecord> data;
+
+    virtual std::ostream& streamout ( std::ostream& ) const;
+    virtual std::ostream& streamout ( std::ostream&, const std::string&, const std::string&) const;
   };
+
+  inline std::ostream& operator<< ( std::ostream& os, const SaifSignal& rhs) {
+    return rhs.streamout(os);
+  }
 
   // instance
   class SaifInstance {
@@ -64,7 +78,13 @@ namespace saif {
     std::map<std::string, boost::shared_ptr<SaifSignal> > signals;
     std::map<std::string, boost::shared_ptr<SaifInstance> > instances;
     std::string module_name;
+
+    virtual std::ostream& streamout ( std::ostream& ) const;
   };
+
+  inline std::ostream& operator<< ( std::ostream& os, const SaifInstance& rhs) {
+    return rhs.streamout(os);
+  }
 
   // database
   class SaifDB {
@@ -81,7 +101,13 @@ namespace saif {
 
     boost::shared_ptr<SaifInstance> top;
     std::string top_name;
+
+    virtual std::ostream& streamout ( std::ostream& ) const;
   };
+
+  inline std::ostream& operator<< ( std::ostream& os, const SaifDB& rhs) {
+    return rhs.streamout(os);
+  }
 
 }
 

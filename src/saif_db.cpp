@@ -27,6 +27,7 @@
 */
 
 #include "saif_db.hpp"
+#include <boost/foreach.hpp>
 
 using std::string;
 
@@ -37,5 +38,68 @@ saif::SaifRecord::SaifRecord() {
   TZ = 0;
   TC = 0;
   IG = 0;
+  TB = 0;
+}
+
+std::ostream& saif::SaifRecord::streamout( std::ostream& os) const {
+  os << "(T0 " << T0.get_str() << ") ";
+  os << "(T1 " << T1.get_str() << ") ";
+  os << "(TX " << TX.get_str() << ") ";
+  os << "(TZ " << TZ.get_str() << ") ";
+  os << "(TC " << TC.get_str() << ") ";
+  os << "(IG " << IG.get_str() << ") ";
+  os << "(TB " << TB.get_str() << ") ";
+  return os;
+}
+
+std::ostream& saif::SaifSignal::streamout( std::ostream& os) const {
+  return streamout(os, "", "");
+}
+
+std::ostream& saif::SaifSignal::streamout( std::ostream& os, const std::string& sig, const std::string& dim) const {
+  if(bits.empty()) {
+    os << "(" << sig << dim << std::endl;
+    os << "    " << *data << std::endl;
+    os << ")" << std::endl;
+  } else {
+    std::pair<const int, boost::shared_ptr<SaifSignal> > it;
+    BOOST_FOREACH(it, bits) {
+      mpz_class m = it.first;
+      m_dim = dim + "[" + m.get_str() + "]";
+      it.second->streamout(os, sig, m_dim);
+    }
+  }
+  return os;
+}
+
+std::ostream& saif::SaifInstance::streamout( std::ostream& os) const {
+  return streamout(os, "");
+}
+
+std::ostream& saif::SaifInstance::streamout( std::ostream& os, const std::string name) const {
+  os << "(INSTANCE ";
+
+  if(module_name.empty())
+    os << name << std::endl;
+  else
+    os << "\"" << module_name << "\" " << name << std::endl;
+
+  if(!signals.empty()) {
+    os << "(NET" << std::endl;
+    std::pair<const string&, boost::shared_ptr<SaifSignal> > it;
+    BOOST_FOREACH(it, signals) {
+      it.second->streamout(os, it.first, "");
+    }
+    os << ")" << std::endl;
+  }
+
+  if(!instances.empty()) {
+    std::pair<const string&, boost::shared_ptr<SaifInstance> > it;
+    BOOST_FOREACH(it, instance) {
+      it.second->streamout(os, it.first);
+    }
+  }
+
+  return os;
 }
 
