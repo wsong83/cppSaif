@@ -36,6 +36,8 @@ int main(int argc, char* argv[]) {
   
   parser.parse(&db);
 
+  std::cout << db << std::endl;
+
   return 1;
   
 }

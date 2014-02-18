@@ -190,7 +190,7 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
           return token_helper(TType::SString,       false, 0,          0, false,  rvt, true);
         }
       } else {
-        tt->tStr = t;
+        tt->tVar = t;
         return token_helper(TType::SVar,            false, 0,          1, false,  rvt, true);
       }
     }
@@ -231,6 +231,7 @@ bool saif::SaifLexer::validate_token(const string& t, saif_token_type * tt, int&
   case S_SIG: {
     switch(state.back().second) {
     case 0: {
+      tt->tVar = t;
       return token_helper(TType::SVar,              false, 0,          1, false,  rvt, true);
     }
     case 1: {

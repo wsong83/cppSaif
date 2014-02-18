@@ -138,11 +138,13 @@ saif_instance
       $$.first = $4;
       $$.second = $5;
       $$.second->module_name = $3;
+      //std::cout << $$.first << " " << *($$.second) << std::endl;
     }
     | '(' "INSTANCE" SVar instance_contents ')'
     {
       $$.first = $3;
       $$.second = $4;
+      //std::cout << $$.first << " " << *($$.second) << std::endl;
     }
     ;
 

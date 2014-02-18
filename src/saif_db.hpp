@@ -65,7 +65,7 @@ namespace saif {
     boost::shared_ptr<SaifRecord> data;
 
     virtual std::ostream& streamout ( std::ostream& ) const;
-    virtual std::ostream& streamout ( std::ostream&, const std::string&, const std::string&) const;
+    virtual std::ostream& streamout ( std::ostream&, const std::string&, const std::string&, unsigned int indent = 0) const;
   };
 
   inline std::ostream& operator<< ( std::ostream& os, const SaifSignal& rhs) {
@@ -79,6 +79,7 @@ namespace saif {
     std::map<std::string, boost::shared_ptr<SaifInstance> > instances;
     std::string module_name;
 
+    virtual std::ostream& streamout ( std::ostream&, const std::string&, unsigned int indent = 0) const;
     virtual std::ostream& streamout ( std::ostream& ) const;
   };
 

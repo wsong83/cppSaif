@@ -56,17 +56,17 @@ std::ostream& saif::SaifSignal::streamout( std::ostream& os) const {
   return streamout(os, "", "");
 }
 
-std::ostream& saif::SaifSignal::streamout( std::ostream& os, const std::string& sig, const std::string& dim) const {
+std::ostream& saif::SaifSignal::streamout( std::ostream& os, const std::string& sig, const std::string& dim, unsigned int indent) const {
   if(bits.empty()) {
-    os << "(" << sig << dim << std::endl;
-    os << "    " << *data << std::endl;
-    os << ")" << std::endl;
+    os << std::string(indent, ' ') << "(" << sig << dim << std::endl;
+    os << std::string(indent, ' ') << "    " << *data << std::endl;
+    os << std::string(indent, ' ') << ")" << std::endl;
   } else {
-    std::pair<const int, boost::shared_ptr<SaifSignal> > it;
-    BOOST_FOREACH(it, bits) {
+    typedef std::pair<const int, boost::shared_ptr<SaifSignal> > signal_type;
+    BOOST_FOREACH(signal_type it, bits) {
       mpz_class m = it.first;
-      m_dim = dim + "[" + m.get_str() + "]";
-      it.second->streamout(os, sig, m_dim);
+      std::string m_dim = dim + "[" + m.get_str() + "]";
+      it.second->streamout(os, sig, m_dim, indent);
     }
   }
   return os;
@@ -76,8 +76,8 @@ std::ostream& saif::SaifInstance::streamout( std::ostream& os) const {
   return streamout(os, "");
 }
 
-std::ostream& saif::SaifInstance::streamout( std::ostream& os, const std::string name) const {
-  os << "(INSTANCE ";
+std::ostream& saif::SaifInstance::streamout( std::ostream& os, const std::string& name, unsigned int indent) const {
+  os << std::string(indent, ' ') << "(INSTANCE ";
 
   if(module_name.empty())
     os << name << std::endl;
@@ -85,21 +85,39 @@ std::ostream& saif::SaifInstance::streamout( std::ostream& os, const std::string
     os << "\"" << module_name << "\" " << name << std::endl;
 
   if(!signals.empty()) {
-    os << "(NET" << std::endl;
-    std::pair<const string&, boost::shared_ptr<SaifSignal> > it;
-    BOOST_FOREACH(it, signals) {
-      it.second->streamout(os, it.first, "");
+    os << std::string(indent+2, ' ') << "(NET" << std::endl;
+    typedef std::pair<const string&, boost::shared_ptr<SaifSignal> > signal_type;
+    BOOST_FOREACH(signal_type it, signals) {
+      it.second->streamout(os, it.first, "", indent+4);
     }
-    os << ")" << std::endl;
+    os << std::string(indent+2, ' ') << ")" << std::endl;
   }
 
   if(!instances.empty()) {
-    std::pair<const string&, boost::shared_ptr<SaifInstance> > it;
-    BOOST_FOREACH(it, instance) {
-      it.second->streamout(os, it.first);
+    typedef std::pair<const string&, boost::shared_ptr<SaifInstance> > instance_type;
+    BOOST_FOREACH(instance_type it, instances) {
+      it.second->streamout(os, it.first, indent+2);
     }
   }
+
+  os << std::string(indent, ' ') << ")" << std::endl;
 
   return os;
 }
 
+std::ostream& saif::SaifDB::streamout( std::ostream& os) const {
+  os << "(SAIFILE" << std::endl;
+  os << "(SAIFVERSION \"" << version << "\")" << std::endl;
+  os << "(DIRECTION \"" << direction << "\")" << std::endl;
+  os << "(DESIGN)" << std::endl;
+  os << "(DATE \"" << date << "\")" << std::endl;
+  os << "(VENDOR \"" << vendor << "\")" << std::endl;
+  os << "(PROGRAM_NAME \"" << program_name << "\")" << std::endl;
+  os << "(VERSION \"" << tool_version << "\")" << std::endl;
+  os << "(DIVIDER " << divider << ")" << std::endl;
+  os << "(TIMESCALE " << timescale.first.get_str() << " " << timescale.second << ")" << std::endl;
+  os << "(DURATION " << duration.get_str() << ")" << std::endl;
+  top->streamout(os, top_name);
+  os << ")" << std::endl;
+  return os;
+}
