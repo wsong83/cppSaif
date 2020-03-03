@@ -26,7 +26,7 @@
 TARGET = DEBUG
 
 export BISON_EXE = bison
-export CXX = ccache g++
+export CXX = g++
 export MC_FLAG =
 
 ifeq ($(TARGET),RELEASE)

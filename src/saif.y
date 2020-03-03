@@ -268,6 +268,6 @@ activity
 
 %%
 
-void saif::saif_parser::error (const saif::location& loc, const std::string& msg) {
-  std::cout << loc << ":" << msg << std::endl;
+void saif::saif_parser::error (const std::string& msg) {
+  std::cout << msg << std::endl;
   }
